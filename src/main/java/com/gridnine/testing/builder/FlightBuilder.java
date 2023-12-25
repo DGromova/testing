@@ -64,20 +64,20 @@ public class FlightBuilder {
                 .collect(Collectors.toList());
     }
 
-//    public static List<Flight> displayFlightsWithAStayOnTheGroundOfLessThanTwoHours () {
-//        List<Flight> flights = new ArrayList<>();
-//        AtomicLong hours = new AtomicLong();
-//        for (Flight f : createFlights()) {
-//            for (int i = 0; i < f.getSegments().size() - 1; i++) {
-//                Duration duration = Duration.between(f.getSegments().get(i).getArrivalDate(), f.getSegments().get(i + 1).getDepartureDate());
-//                hours.set(hours.get() + Math.abs(duration.getSeconds() / 3600));
-//            }
-//            if (hours.get() < 2) {
-//                flights.add(f);
-//            }
-//            hours.set(0);
-//        }
-//        return flights;
-//    }
+    public static List<Flight> displayFlightsWithAStayOnTheGroundOfLessThanTwoHours () {
+        List<Flight> flights = new ArrayList<>();
+        AtomicLong hours = new AtomicLong();
+        for (Flight f : createFlights()) {
+            for (int i = 0; i < f.getSegments().size() - 1; i++) {
+                Duration duration = Duration.between(f.getSegments().get(i).getArrivalDate(), f.getSegments().get(i + 1).getDepartureDate());
+                hours.set(hours.get() + Math.abs(duration.getSeconds() / 3600));
+            }
+            if (hours.get() < 2) {
+                flights.add(f);
+            }
+            hours.set(0);
+        }
+        return flights;
+    }
 
 }
