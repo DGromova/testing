@@ -65,20 +65,19 @@ public class FlightBuilder {
     }
 
     public static List<Flight> displayFlightsWithAStayOnTheGroundOfLessThanTwoHours () {
-        List<Flight> list = new ArrayList<>();
+        List<Flight> flights = new ArrayList<>();
         AtomicLong hours = new AtomicLong();
-        createFlights()
-                .forEach(f -> {
-                    for (int i = 0; i < f.getSegments().size() - 1; i++) {
-                        Duration duration = Duration.between(f.getSegments().get(i).getArrivalDate(), f.getSegments().get(i+1).getDepartureDate());
-                        hours.set(hours.get() + Math.abs(duration.getSeconds() / 3600));
-                    }
-                    if (hours.get() < 2) {
-                        list.add(f);
-                    }
-                    hours.set(0);
-                });
-        return list;
+        for (Flight f : createFlights()) {
+            for (int i = 0; i < f.getSegments().size() - 1; i++) {
+                Duration duration = Duration.between(f.getSegments().get(i).getArrivalDate(), f.getSegments().get(i + 1).getDepartureDate());
+                hours.set(hours.get() + Math.abs(duration.getSeconds() / 3600));
+            }
+            if (hours.get() < 2) {
+                flights.add(f);
+            }
+            hours.set(0);
+        }
+        return flights;
     }
 
 }
