@@ -1,18 +1,22 @@
-package com.gridnine.testing;
+package com.gridnine.testing.builder;
 
+import com.gridnine.testing.model.Flight;
+import com.gridnine.testing.model.Segment;
+
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 /**
  * Factory class to get sample list of flights.
  */
-class FlightBuilder {
-    static List<Flight> createFlights() {
+public class FlightBuilder {
+    public static List<Flight> createFlights() {
         LocalDateTime threeDaysFromNow = LocalDateTime.now().plusDays(3);
         return Arrays.asList(
                 //A normal flight with two hour duration
@@ -44,55 +48,37 @@ class FlightBuilder {
         }
         return new Flight(segments);
     }
-}
 
-/**
- * Bean that represents a flight.
- */
-class Flight {
-    private final List<Segment> segments;
-
-    Flight(final List<Segment> segs) {
-        segments = segs;
+    public static List<Flight> displayFlightsDepartingAfterTheCurrentTime() {
+        LocalDateTime currentDateTime = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
+        return createFlights().stream()
+                .filter(f -> f.getSegments().stream()
+                        .anyMatch(s -> s.getDepartureDate().isAfter(currentDateTime)))
+                .collect(Collectors.toList());
     }
 
-    List<Segment> getSegments() {
-        return segments;
+    public static List<Flight> displayFlightsWhereSegmentsWithArrivalLaterThanDeparture() {
+        return createFlights().stream()
+                .filter(f -> f.getSegments().stream()
+                        .allMatch(s -> s.getDepartureDate().isBefore(s.getArrivalDate())))
+                .collect(Collectors.toList());
     }
 
-    @Override
-    public String toString() {
-        return segments.stream().map(Object::toString)
-                .collect(Collectors.joining(" "));
-    }
-}
-
-/**
- * Bean that represents a flight segment.
- */
-class Segment {
-    private final LocalDateTime departureDate;
-
-    private final LocalDateTime arrivalDate;
-
-    Segment(final LocalDateTime dep, final LocalDateTime arr) {
-        departureDate = Objects.requireNonNull(dep);
-        arrivalDate = Objects.requireNonNull(arr);
+    public static List<Flight> displayFlightsWithAStayOnTheGroundOfLessThanTwoHours () {
+        List<Flight> list = new ArrayList<>();
+        AtomicLong hours = new AtomicLong();
+        createFlights()
+                .forEach(f -> {
+                    for (int i = 0; i < f.getSegments().size() - 1; i++) {
+                        Duration duration = Duration.between(f.getSegments().get(i).getArrivalDate(), f.getSegments().get(i+1).getDepartureDate());
+                        hours.set(hours.get() + Math.abs(duration.getSeconds() / 3600));
+                    }
+                    if (hours.get() < 2) {
+                        list.add(f);
+                    }
+                    hours.set(0);
+                });
+        return list;
     }
 
-    LocalDateTime getDepartureDate() {
-        return departureDate;
-    }
-
-    LocalDateTime getArrivalDate() {
-        return arrivalDate;
-    }
-
-    @Override
-    public String toString() {
-        DateTimeFormatter fmt =
-                DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
-        return '[' + departureDate.format(fmt) + '|' + arrivalDate.format(fmt)
-                + ']';
-    }
 }
